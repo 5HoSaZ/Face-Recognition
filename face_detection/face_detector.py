@@ -55,4 +55,5 @@ class FaceDetector:
         mask = np.zeros_like(gray_img)
         cv2.fillConvexPoly(mask, convex_hull, 255)
         # Return image with only face visible
-        return cv2.bitwise_and(img, img, mask=mask)
+        img = cv2.bitwise_and(img, img, mask=mask)
+        return img
