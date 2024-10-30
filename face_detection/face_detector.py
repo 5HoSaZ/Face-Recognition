@@ -8,15 +8,34 @@ class FaceDetector:
     Perform face detection and landmarks extraction using dlib face detector.
     """
 
-    def __init__(self) -> None:
+    # Flag
+    MUST_HAVE_FACE = 0
+    IMAGE_AS_FACE = 1
+
+    class NoFaceDetected(Exception):
+        def __init__(self, *args):
+            super().__init__(*args)
+
+    def __init__(self, flag=MUST_HAVE_FACE) -> None:
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(
             "./common/shape_predictor_68_face_landmarks.dat"
         )
+        self.flag = flag
+
+    def get_faces(self, img):
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = self.detector(gray_img, 1)
+        if len(faces) == 0:
+            match self.flag:
+                case self.MUST_HAVE_FACE:
+                    raise self.NoFaceDetected("No face found in image")
+                case self.IMAGE_AS_FACE:
+                    faces.append(dlib.rectangle(0, 0, img.shape[1], img.shape[0]))
+        return faces
 
     def crop_face(self, img, padding: int = 0):
-        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        face = self.detector(gray_img, 1)[0]
+        face = self.get_faces(img)[0]
         img = img[face.top() : face.bottom(), face.left() : face.right()]
         if padding > 0:
             img = cv2.copyMakeBorder(
@@ -29,7 +48,7 @@ class FaceDetector:
         Return a list of landmarks cordinates (in float32) for each detected faces.
         """
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = self.detector(gray_img, 1)
+        faces = self.get_faces(img)
         # Get landmarks coordinates for each face
         landmarks = []
         for face in faces:
