@@ -28,15 +28,28 @@ class FaceDetectionPipeline:
         return Image.fromarray(masked_img)
 
     def __get_bounding_box(self, image: Image):
-        boxes, acc = self.mtcnn.detect(image)
-        if len(boxes) > 0:
-            index = np.argmax(acc)
-            x1, y1, x2, y2 = (int(v) for v in boxes[index])
+        def fit_box_to_image(box, image):
+            x1, y1, x2, y2 = box
             x1, y1 = max(x1, 0), max(y1, 0)
             x2, y2 = min(x2, image.size[0]), min(y2, image.size[1])
+            return x1, y1, x2, y2
+
+        def get_box_size(box):
+            return int((box[2] - box[0]) * (box[3] - box[1]))
+
+        boxes, accs = self.mtcnn.detect(image)
+        if len(boxes) == 0:
+            x1, y1, x2, y2 = (0, 0) + image.size
         else:
-            x1 = y1 = 0
-            x2, y2 = image.size
+            boxes = [fit_box_to_image(box, image) for box in boxes]
+            detected = list(
+                sorted(
+                    zip(boxes, accs),
+                    key=lambda x: (get_box_size(x[0]), float(x[1])),
+                    reverse=True,
+                )
+            )
+            x1, y1, x2, y2 = (int(v) for v in detected[0][0])
         return ((x1, y1), (x2, y2))
 
     def __crop_to_box(image, box, resize=(224, 224)):
