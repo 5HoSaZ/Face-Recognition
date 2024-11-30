@@ -28,9 +28,10 @@ class FaceDetectionPipeline:
         return Image.fromarray(masked_img)
 
     def __get_bounding_box(self, image: Image):
-        boxes, _ = self.mtcnn.detect(image)
+        boxes, acc = self.mtcnn.detect(image)
         if len(boxes) > 0:
-            x1, y1, x2, y2 = (int(v) for v in boxes[0])
+            index = np.argmax(acc)
+            x1, y1, x2, y2 = (int(v) for v in boxes[index])
             x1, y1 = max(x1, 0), max(y1, 0)
             x2, y2 = min(x2, image.size[0]), min(y2, image.size[1])
         else:
