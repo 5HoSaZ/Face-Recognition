@@ -5,8 +5,7 @@ import websockets
 import numpy as np
 from PIL import Image
 
-SERVER_IP = "localhost"
-SERVER_PORT = 8000
+SERVER_IP, SERVER_PORT = "172.26.162.157", 8888
 CHUNK = 2048
 
 # List of connected clients
