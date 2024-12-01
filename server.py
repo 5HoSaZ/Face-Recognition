@@ -2,14 +2,11 @@ import os
 import math
 import asyncio
 import websockets
-import uuid
 import numpy as np
 from PIL import Image
 
-
-# HOST = "192.168.1.104"
-HOST = "172.26.162.157"
-PORT = 8000
+SERVER_IP = "localhost"
+SERVER_PORT = 8000
 CHUNK = 2048
 
 # List of connected clients
@@ -19,7 +16,7 @@ connected = dict()
 # Create handler for each connections
 async def handler(websocket, path: str = None):
     try:
-        client_id = uuid.uuid4()
+        client_id = await websocket.recv()
         connected[client_id] = websocket
         print(f"Client {client_id} has connected")
         await process(websocket)
@@ -49,13 +46,13 @@ async def process(websocket):
         image_data = image_data.reshape(height, width, 3)
         image = Image.fromarray(image_data)
         print("\nSaving image, shape:", image_data.shape)
-        image.save("Image.jpg")
+        image.save("./images/Image.jpg")
         await websocket.send("Server received image")
 
 
 async def main():
-    async with websockets.serve(handler, HOST, PORT):
-        print(f"Server started at ws://{HOST}:{PORT}.")
+    async with websockets.serve(handler, SERVER_IP, SERVER_PORT):
+        print(f"Server started at ws://{SERVER_IP}:{SERVER_PORT}.")
         await asyncio.get_running_loop().create_future()  # run forever
 
 
