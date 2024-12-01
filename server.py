@@ -36,6 +36,7 @@ class FaceRecognition:
 
     def predicts(self, image: Image):
         image = self.pipeline(image)
+        image.save("./images/processed.jpg")
         image = self.normalize(image)
         image = image.unsqueeze(0).to(self.device)
         outputs = torch.exp(self.model(image)).max(dim=1)
@@ -86,7 +87,7 @@ async def process(websocket):
         image_data = image_data.reshape(height, width, 3)
         image = Image.fromarray(image_data)
         print("\nSaving image, shape:", image_data.shape)
-        image.save("./images/Image.jpg")
+        image.save("./images/receive_image.jpg")
         await websocket.send("Server received image!")
         print("Predicting...")
         name, probability = recognition.predicts(image)
