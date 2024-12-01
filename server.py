@@ -1,18 +1,19 @@
-import os
-import math
-import asyncio
-import websockets
-from websockets.asyncio.server import serve
-import numpy as np
-from PIL import Image
-import uuid
+from models.net import ConvolutionNet
+from models.transform import PILToNormalizedTensor
+from face_detection import FaceDetectionPipeline
 
 import torch
 import pandas as pd
 
-from face_detection import FaceDetectionPipeline
-from models.net import ConvolutionNet
-from models.transform import PILToNormalizedTensor
+import uuid
+import asyncio
+import websockets
+from websockets.asyncio.server import serve
+
+import os
+import math
+import numpy as np
+from PIL import Image
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -95,7 +96,6 @@ async def process(websocket):
         name, probability = recognition.predicts(image)
         response = f"{name}, Confidence: {probability:.2%}"
         print(response)
-        # await websocket.send(response)
 
 
 async def main():

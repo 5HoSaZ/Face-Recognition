@@ -1,6 +1,5 @@
 notebook.ipynb
 *common
-*images
 *data
 *wandb
 models/*.pth
