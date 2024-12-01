@@ -5,6 +5,47 @@ import websockets
 import numpy as np
 from PIL import Image
 
+import torch
+import pandas as pd
+
+from face_detection import FaceDetectionPipeline
+from models.net import ConvolutionNet
+from models.transform import PILToNormalizedTensor
+
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+class FaceRecognition:
+    def __init__(self, model_path: str, device: str):
+        self.device = device
+        # Get mapper
+        self.mapper = {
+            int(row["Target"]): str(row["Name"])
+            for _, row in pd.read_csv("./data/processed/mapping.csv").iterrows()
+        }
+        # Get pipeline
+        self.pipeline = FaceDetectionPipeline(device)
+        self.normalize = PILToNormalizedTensor()
+        # Get model
+        self.num_classes = len(self.mapper)
+        self.model = ConvolutionNet(self.num_classes, 256, 0.2)
+        self.model.load_state_dict(torch.load(model_path, weights_only=True))
+        self.model.to(device)
+        self.model.eval()
+
+    def predicts(self, image: Image):
+        image = self.pipeline(image)
+        image = self.normalize(image)
+        image = image.unsqueeze(0).to(self.device)
+        outputs = torch.exp(self.model(image)).max(dim=1)
+        pred, prob = outputs.indices, outputs.values
+        pred, prob = self.mapper[int(pred.item())], float(prob.item())
+        return pred, prob
+
+
+recognition = FaceRecognition("./models/convolution_net_1.pth", DEVICE)
+
 SERVER_IP, SERVER_PORT = "172.26.162.157", 8888
 CHUNK = 2048
 
@@ -46,7 +87,12 @@ async def process(websocket):
         image = Image.fromarray(image_data)
         print("\nSaving image, shape:", image_data.shape)
         image.save("./images/Image.jpg")
-        await websocket.send("Server received image")
+        await websocket.send("Server received image!")
+        print("Predicting...")
+        name, probability = recognition.predicts(image)
+        response = f"{name}, Confidence: {probability:.2%}"
+        print(response)
+        # await websocket.send(response)
 
 
 async def main():
