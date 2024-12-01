@@ -38,7 +38,7 @@ class FaceDetectionPipeline:
             return int((box[2] - box[0]) * (box[3] - box[1]))
 
         boxes, accs = self.mtcnn.detect(image)
-        if len(boxes) == 0:
+        if boxes is None or len(boxes) == 0:
             x1, y1, x2, y2 = (0, 0) + image.size
         else:
             boxes = [fit_box_to_image(box, image) for box in boxes]
