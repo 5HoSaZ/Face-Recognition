@@ -3,3 +3,5 @@ notebook.ipynb
 *data
 *wandb
 models/*.pth
+images/processed.jpg
+images/received.jpg
