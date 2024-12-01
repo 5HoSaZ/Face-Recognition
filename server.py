@@ -2,8 +2,10 @@ import os
 import math
 import asyncio
 import websockets
+from websockets.asyncio.server import serve
 import numpy as np
 from PIL import Image
+
 
 import torch
 import pandas as pd
@@ -62,6 +64,7 @@ async def handler(websocket, path: str = None):
         print(f"Client {client_id} has connected")
         await process(websocket)
     except websockets.exceptions.ConnectionClosed as e:
+        websocket.close()
         print(e)
     finally:
         del connected[client_id]
@@ -97,7 +100,7 @@ async def process(websocket):
 
 
 async def main():
-    async with websockets.serve(handler, SERVER_IP, SERVER_PORT):
+    async with serve(handler, SERVER_IP, SERVER_PORT):
         print(f"Server started at ws://{SERVER_IP}:{SERVER_PORT}.")
         await asyncio.get_running_loop().create_future()  # run forever
 
