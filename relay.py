@@ -22,7 +22,6 @@ async def handler(client_socket, path: str = None):
             await relay_socket.send(client_id)
             await relay(client_socket, relay_socket)
         except websockets.exceptions.ConnectionClosed as e:
-            await relay_socket.close()
             print(e)
         finally:
             del connected[client_id]
