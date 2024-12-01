@@ -1,5 +1,4 @@
 import asyncio
-import websockets
 from websockets.asyncio.server import serve
 from websockets.asyncio.client import connect
 import uuid
@@ -15,19 +14,18 @@ connected = dict()
 
 # Create handler for each connections
 async def handler(client_socket, path: str = None):
-    async with connect(f"ws://{SERVER_IP}:{SERVER_PORT}") as relay_socket:
-        try:
-            client_id = uuid.uuid4()
+    client_id = uuid.uuid4()
+    try:
+        async with connect(f"ws://{SERVER_IP}:{SERVER_PORT}") as relay_socket:
             connected[client_id] = (client_socket, relay_socket)
             print("Relay a client to server")
             async for msg in client_socket:
                 await relay_socket.send(msg)
-        except websockets.exceptions.ConnectionClosed as e:
-            print(e)
-        finally:
             await relay_socket.close()
             del connected[client_id]
             print("A client has disconnected")
+    except Exception:
+        print("Error connecting to server!")
 
 
 async def main():
