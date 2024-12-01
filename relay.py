@@ -4,8 +4,8 @@ from websockets.asyncio.server import serve
 from websockets.asyncio.client import connect
 import uuid
 
-RELAY_IP, RELAY_PORT = "localhost", 8765
-SERVER_IP, SERVER_PORT = "localhost", 8000
+RELAY_IP, RELAY_PORT = "192.168.1.108", 8765
+SERVER_IP, SERVER_PORT = "172.26.162.157", 8888
 CHUNK = 2048
 
 # List of connected clients
@@ -28,6 +28,7 @@ async def handler(client_socket, path: str = None):
             print(f"Client {client_id} has disconnected")
 
 
+# Relay to server
 async def relay(client_socket, relay_socket):
     async for msg in client_socket:
         await relay_socket.send(msg)
