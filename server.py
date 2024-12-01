@@ -5,7 +5,7 @@ import websockets
 from websockets.asyncio.server import serve
 import numpy as np
 from PIL import Image
-
+import uuid
 
 import torch
 import pandas as pd
@@ -59,7 +59,7 @@ connected = dict()
 # Create handler for each connections
 async def handler(websocket, path: str = None):
     try:
-        client_id = await websocket.recv()
+        client_id = uuid.uuid4()
         connected[client_id] = websocket
         print(f"Client {client_id} has connected")
         await process(websocket)
@@ -89,7 +89,7 @@ async def process(websocket):
         image_data = image_data.reshape(height, width, 3)
         image = Image.fromarray(image_data)
         print("\nSaving image, shape:", image_data.shape)
-        image.save("./images/receive_image.jpg")
+        image.save("./images/received.jpg")
         await websocket.send("Server received image!")
         print("Predicting...")
         name, probability = recognition.predicts(image)

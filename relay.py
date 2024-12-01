@@ -16,10 +16,9 @@ connected = dict()
 async def handler(client_socket, path: str = None):
     async with connect(f"ws://{SERVER_IP}:{SERVER_PORT}") as relay_socket:
         try:
-            client_id = str(uuid.uuid4())
+            client_id = uuid.uuid4()
             print(f"Client {client_id} has connected")
             connected[client_id] = (client_socket, relay_socket)
-            await relay_socket.send(client_id)
             await relay(client_socket, relay_socket)
         except websockets.exceptions.ConnectionClosed as e:
             print(e)
