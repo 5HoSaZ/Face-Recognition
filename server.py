@@ -64,7 +64,6 @@ async def handler(websocket, path: str = None):
         print(f"Client {client_id} has connected")
         await process(websocket)
     except websockets.exceptions.ConnectionClosed as e:
-        await websocket.close()
         print(e)
     finally:
         del connected[client_id]
